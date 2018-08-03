@@ -81,4 +81,8 @@ public class Price {
     public BigDecimal getValue() {
         return value;
     }
+
+    public boolean haveSameValueWith(Price price) {
+        return this.value.compareTo(price.value) == 0;
+    }
 }

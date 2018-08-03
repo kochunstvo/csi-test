@@ -14,4 +14,6 @@ public interface PriceService {
     Collection<Price> findAll();
 
     List<Price> findByBeginAndEnd(LocalDateTime start, LocalDateTime end);
+
+    Price save(Price price);
 }

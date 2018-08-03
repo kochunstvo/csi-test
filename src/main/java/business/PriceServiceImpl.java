@@ -20,9 +20,9 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public void add(Price price) {
         List<Price> filteredPrices = priceRepository.findByCodeAndNumber(price.getProductCode(), price.getNumber());
-        priceRepository.save(price);
 
         if (filteredPrices.isEmpty()) {
+            save(price);
             return;
         }
 
@@ -31,10 +31,10 @@ public class PriceServiceImpl implements PriceService {
                 .findFirst().orElse(null);
         if (toSplit == null) {
             Price overlapsAtStart = filteredPrices.stream()
-                    .filter(it -> it.duration().overlapsAtStart(price.duration()))
+                    .filter(it -> it.duration().overlapsAtStartBy(price.duration()))
                     .findFirst().orElse(null);
             Price overlapsAtEnd = filteredPrices.stream()
-                    .filter(it -> it.duration().overlapsAtEnd(price.duration()))
+                    .filter(it -> it.duration().overlapsAtEndBy(price.duration()))
                     .findFirst().orElse(null);
             List<Price> pricesToReplace = filteredPrices.stream()
                     .filter(it -> it.duration().containsIn(price.duration()))
@@ -52,14 +52,18 @@ public class PriceServiceImpl implements PriceService {
 
     private void cleanDurationBetween(Price overlapsAtStart, Price overlapsAtEnd, Price newPrice) {
         Optional.ofNullable(overlapsAtStart)
-                .ifPresent(price -> priceRepository.save(price.withUpdatedDuration(newPrice.getEnd(), price.getEnd())));
+                .map(price -> price.withUpdatedDuration(newPrice.getEnd(), price.getEnd()))
+                .ifPresent(this::save);
         Optional.ofNullable(overlapsAtEnd)
-                .ifPresent(price -> priceRepository.save(price.withUpdatedDuration(price.getBegin(), newPrice.getBegin())));
+                .map(price -> price.withUpdatedDuration(price.getBegin(), newPrice.getBegin()))
+                .ifPresent(this::save);
+        save(newPrice);
     }
 
-    private void splitAndSave(Price toSplit, Price price) {
-        toSplit.splitBy(price)
-                .forEach(priceRepository::save);
+    private void splitAndSave(Price toSplit, Price newPrice) {
+        toSplit.splitBy(newPrice)
+                .forEach(this::save);
+        save(newPrice);
     }
 
     @Override
@@ -75,5 +79,16 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public List<Price> findByBeginAndEnd(LocalDateTime start, LocalDateTime end) {
         return priceRepository.findByBeginAndEnd(start, end);
+    }
+
+    @Override
+    public Price save(Price price) {
+        return priceRepository.findByCodeAndNumber(price.getProductCode(), price.getNumber()).stream()
+                .filter(it -> it.haveSameValueWith(price))
+                .filter(it -> it.getEnd().isEqual(price.getBegin()))
+                .findFirst()
+                .map(it -> it.withUpdatedDuration(it.getBegin(), price.getEnd()))
+                .map(priceRepository::save)
+                .orElseGet(() -> priceRepository.save(price));
     }
 }

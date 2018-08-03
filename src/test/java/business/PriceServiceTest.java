@@ -31,7 +31,7 @@ public class PriceServiceTest {
             2,
             LocalDateTime.now().minus(Period.ofMonths(1)),
             LocalDateTime.now(),
-            new BigDecimal(200)
+            new BigDecimal(210)
     );
     private static final Price secondPrice = new Price(
             "code",
@@ -39,11 +39,11 @@ public class PriceServiceTest {
             2,
             LocalDateTime.now(),
             LocalDateTime.now().plus(Period.ofWeeks(1)),
-            new BigDecimal(200)
+            new BigDecimal(190)
     );
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         repository.truncate();
     }
 
@@ -51,7 +51,7 @@ public class PriceServiceTest {
     Before:
     nothing
     After:
-    |---new---|
+    |---200---|
     */
     @Test
     public void willAddPriceToEmptyDb() {
@@ -60,13 +60,40 @@ public class PriceServiceTest {
         assertNotNull("Цена не была добавлена в БД", service.find(price.getId()));
     }
 
-
     /*
     Before:
-    |----1st----|
+    |----200----|
     After:
-    |----1st----|---new---|
+    |---------200---------|
     */
+    @Test
+    public void willNotInsertNewPriceIfItNotOverlappingAndHasSameValue() {
+        LocalDateTime firstStart = price.getBegin();
+        LocalDateTime firstEnd   = price.getEnd();
+        LocalDateTime secondEnd  = price.getEnd().plusWeeks(1);
+        Price anotherPrice = new Price(
+                "code",
+                1,
+                2,
+                firstEnd,
+                secondEnd,
+                price.getValue()
+        );
+        service.add(price);
+        service.add(anotherPrice);
+
+        Collection<Price> prices = service.findAll();
+
+        assertEquals("Количество цен не сходится", 1, prices.size());
+        assertFalse(service.findByBeginAndEnd(firstStart, secondEnd).isEmpty());
+    }
+
+    /*
+        Before:
+        |----200----|
+        After:
+        |----200----|---150---|
+        */
     @Test
     public void willAddNotOverlappingPrice() {
         LocalDateTime firstStart = price.getBegin();
@@ -90,12 +117,42 @@ public class PriceServiceTest {
         assertFalse(service.findByBeginAndEnd(firstEnd, secondEnd).isEmpty());
     }
 
+    /*
+    Before:
+            |----200----|
+    After:
+            |----200----| |---200---|
+            */
+    @Test
+    public void willAddNotOverlappingPrice_2() {
+        LocalDateTime firstStart  = price.getBegin();
+        LocalDateTime firstEnd    = price.getEnd();
+        LocalDateTime secondStart = firstEnd.plusDays(1);
+        LocalDateTime secondEnd   = price.getEnd().plusWeeks(1);
+        Price anotherPrice = new Price(
+                "code",
+                1,
+                2,
+                secondStart,
+                secondEnd,
+                price.getValue()
+        );
+        service.add(price);
+        service.add(anotherPrice);
+
+        Collection<Price> prices = service.findAll();
+
+        assertEquals("Количество цен не сходится", 2, prices.size());
+        assertFalse(service.findByBeginAndEnd(firstStart, firstEnd).isEmpty());
+        assertFalse(service.findByBeginAndEnd(secondStart, secondEnd).isEmpty());
+    }
+
 
     /*
     Before:
-    |-------1st-------|
+    |-------200-------|
     After:
-    |-1st-|-new-|-1st-|
+    |-200-|-150-|-200-|
     */
     @Test
     public void willInsertPriceInTheMiddleOfDuration() {
@@ -124,9 +181,9 @@ public class PriceServiceTest {
 
     /*
     Before:
-    |----1st----|---2nd----|
+    |----210----|---190----|
     After:
-    |-1st-|--new---|--2rd--|
+    |-210-|--150---|--190--|
     */
     @Test
     public void willStandBetweenTwoPrices() {
@@ -156,9 +213,9 @@ public class PriceServiceTest {
 
     /*
     Before:
-    |--1st--|-2nd-|---3rd---|
+    |--210--|-180-|---190---|
     After:
-    |-1st-|---new---|--3rd--|
+    |-210-|---140---|--190--|
      */
     @Test
     public void willReplaceMiddlePrice() {
@@ -174,7 +231,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 thirdStart,
-                new BigDecimal(150)
+                new BigDecimal(180)
         );
         Price newPrice = new Price(
                 "code",
@@ -182,7 +239,7 @@ public class PriceServiceTest {
                 2,
                 newFirstEnd,
                 newThirdStart,
-                new BigDecimal(150)
+                new BigDecimal(140)
         );
         service.add(firstPrice);
         service.add(secondPrice);

@@ -16,14 +16,12 @@ public class Duration {
         return this.from.isBefore(duration.from) && this.to.isAfter(duration.to);
     }
 
-    public boolean overlapsAtStart(Duration duration) {
-//        return (this.from.isEqual(duration.from) || this.from.isAfter(duration.from)) && this.to.isAfter(duration.to);
-        return this.from.isAfter(duration.from) && this.to.isAfter(duration.to);
+    public boolean overlapsAtStartBy(Duration duration) {
+        return this.from.isBefore(duration.to) && duration.from.isBefore(this.from);
     }
 
-    public boolean overlapsAtEnd(Duration duration) {
-//        return this.from.isBefore(duration.from) && (this.to.isEqual(duration.to) || this.to.isBefore(duration.to));
-        return this.from.isBefore(duration.from) && this.to.isBefore(duration.to);
+    public boolean overlapsAtEndBy(Duration duration) {
+        return this.to.isAfter(duration.from) && duration.to.isAfter(this.to);
     }
 
     public boolean containsIn(Duration duration) {
