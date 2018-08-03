@@ -11,22 +11,22 @@ public class Price {
 
     private static AtomicLong counter = new AtomicLong();
 
-    private Long          id;
-    private String        productCode;
-    private Integer       number;
-    private Integer       depart;
-    private LocalDateTime begin;
-    private LocalDateTime end;
-    private BigDecimal    value;
+    private Long           id;
+    private String         productCode;
+    private Integer        number;
+    private Integer        depart;
+    private LocalDateTime  begin;
+    private LocalDateTime  end;
+    private PositiveAmount amount;
 
-    public Price(String productCode, Integer number, Integer depart, LocalDateTime begin, LocalDateTime end, BigDecimal value) {
+    public Price(String productCode, Integer number, Integer depart, LocalDateTime begin, LocalDateTime end, PositiveAmount amount) {
         this.id = counter.incrementAndGet();
         this.productCode = productCode;
         this.number = number;
         this.depart = depart;
         this.begin = begin;
         this.end = end;
-        this.value = value;
+        this.amount = amount;
     }
 
     private Price(Price price, LocalDateTime newBegin, LocalDateTime newEnd) {
@@ -34,7 +34,7 @@ public class Price {
         this.productCode = price.productCode;
         this.number = price.number;
         this.depart = price.depart;
-        this.value = price.value;
+        this.amount = price.amount;
         this.begin = newBegin;
         this.end = newEnd;
     }
@@ -42,7 +42,7 @@ public class Price {
     public List<Price> splitBy(Price splitter) {
         return Stream.of(
                 this.withUpdatedDuration(this.begin, splitter.begin),
-                new Price(this.productCode, this.number, this.depart, splitter.end, this.end, this.value)
+                new Price(this.productCode, this.number, this.depart, splitter.end, this.end, this.amount)
         ).collect(Collectors.toList());
     }
 
@@ -78,11 +78,11 @@ public class Price {
         return end;
     }
 
-    public BigDecimal getValue() {
-        return value;
+    public PositiveAmount getAmount() {
+        return amount;
     }
 
     public boolean haveSameValueWith(Price price) {
-        return this.value.compareTo(price.value) == 0;
+        return this.amount.equalto(price.amount);
     }
 }

@@ -1,9 +1,9 @@
 package business;
 
+import internal.PositiveAmount;
 import internal.Price;
 import internal.PriceRepository;
 import internal.PriceRepositoryImpl;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Collection;
@@ -23,7 +23,7 @@ public class PriceServiceTest {
             2,
             LocalDateTime.now().minus(Period.ofMonths(1)),
             LocalDateTime.now().plus(Period.ofWeeks(1)),
-            new BigDecimal(200)
+            new PositiveAmount(200)
     );
     private static final Price firstPrice  = new Price(
             "code",
@@ -31,7 +31,7 @@ public class PriceServiceTest {
             2,
             LocalDateTime.now().minus(Period.ofMonths(1)),
             LocalDateTime.now(),
-            new BigDecimal(210)
+            new PositiveAmount(210)
     );
     private static final Price secondPrice = new Price(
             "code",
@@ -39,7 +39,7 @@ public class PriceServiceTest {
             2,
             LocalDateTime.now(),
             LocalDateTime.now().plus(Period.ofWeeks(1)),
-            new BigDecimal(190)
+            new PositiveAmount(190)
     );
 
     @After
@@ -47,12 +47,40 @@ public class PriceServiceTest {
         repository.truncate();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotAddPriceWithNegativeAmount() {
+        Price withNegativeAmount = new Price(
+                "code",
+                1,
+                2,
+                LocalDateTime.now(),
+                LocalDateTime.now().plus(Period.ofWeeks(1)),
+                new PositiveAmount(-5)
+        );
+
+        service.add(withNegativeAmount);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void cannotAddPriceWithZeroAmount() {
+        Price withZeroAmount = new Price(
+                "code",
+                1,
+                2,
+                LocalDateTime.now(),
+                LocalDateTime.now().plus(Period.ofWeeks(1)),
+                new PositiveAmount(0)
+        );
+
+        service.add(withZeroAmount);
+    }
+
     /*
-    Before:
-    nothing
-    After:
-    |---200---|
-    */
+        Before:
+        nothing
+        After:
+        |---200---|
+        */
     @Test
     public void willAddPriceToEmptyDb() {
         service.add(price);
@@ -77,7 +105,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 secondEnd,
-                price.getValue()
+                price.getAmount()
         );
         service.add(price);
         service.add(anotherPrice);
@@ -105,7 +133,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 secondEnd,
-                new BigDecimal(150)
+                new PositiveAmount(150)
         );
         service.add(price);
         service.add(anotherPrice);
@@ -135,7 +163,7 @@ public class PriceServiceTest {
                 2,
                 secondStart,
                 secondEnd,
-                price.getValue()
+                price.getAmount()
         );
         service.add(price);
         service.add(anotherPrice);
@@ -166,7 +194,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 thirdStart,
-                new BigDecimal(150)
+                new PositiveAmount(150)
         );
         service.add(price);
         service.add(newPrice);
@@ -197,7 +225,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 thirdStart,
-                new BigDecimal(150)
+                new PositiveAmount(150)
         );
         service.add(firstPrice);
         service.add(secondPrice);
@@ -231,7 +259,7 @@ public class PriceServiceTest {
                 2,
                 firstEnd,
                 thirdStart,
-                new BigDecimal(180)
+                new PositiveAmount(180)
         );
         Price newPrice = new Price(
                 "code",
@@ -239,7 +267,7 @@ public class PriceServiceTest {
                 2,
                 newFirstEnd,
                 newThirdStart,
-                new BigDecimal(140)
+                new PositiveAmount(140)
         );
         service.add(firstPrice);
         service.add(secondPrice);
