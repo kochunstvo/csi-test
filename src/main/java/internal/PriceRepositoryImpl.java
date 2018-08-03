@@ -44,8 +44,7 @@ public class PriceRepositoryImpl implements PriceRepository {
     @Override
     public List<Price> findByCodeAndNumber(String code, Integer number) {
         return findAll().stream()
-                .filter(price -> price.getProductCode().equals(code))
-                .filter(price -> price.getNumber().equals(number))
+                .filter(price -> price.getProductCode().equals(code) && price.getNumber().equals(number))
                 .collect(Collectors.toList());
     }
 }

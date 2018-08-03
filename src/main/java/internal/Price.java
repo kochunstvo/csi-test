@@ -1,6 +1,7 @@
 package internal;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -39,10 +40,10 @@ public class Price {
     }
 
     public List<Price> splitBy(Price splitter) {
-        return Stream.of(
+        return Arrays.asList(
                 this.withUpdatedDuration(this.begin, splitter.begin),
                 new Price(this.productCode, this.number, this.depart, splitter.end, this.end, this.amount)
-        ).collect(Collectors.toList());
+        );
     }
 
     public Duration duration() {
@@ -81,7 +82,7 @@ public class Price {
         return amount;
     }
 
-    public boolean haveSameValueWith(Price price) {
+    public boolean haveSameAmountWith(Price price) {
         return this.amount.equalTo(price.amount);
     }
 }

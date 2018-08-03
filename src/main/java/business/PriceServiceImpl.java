@@ -6,8 +6,6 @@ import internal.PriceRepositoryImpl;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class PriceServiceImpl implements PriceService {
 
@@ -20,50 +18,40 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public void add(Price newPrice) {
         List<Price> filteredPrices = priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber());
+        save(newPrice);
 
         if (filteredPrices.isEmpty()) {
-            save(newPrice);
             return;
         }
 
-        Price toSplit = filteredPrices.stream()
+        splitPriceWhichContainsNewPrice(newPrice, filteredPrices);
+        spreadOverlappedPrices(newPrice, filteredPrices);
+        removeContainedPrices(newPrice, filteredPrices);
+    }
+
+    private void spreadOverlappedPrices(Price newPrice, List<Price> filteredPrices) {
+        filteredPrices.stream()
+                .filter(price -> price.duration().overlapsAtStartBy(newPrice.duration()))
+                .findFirst()
+                .ifPresent(price -> save(price.withUpdatedDuration(newPrice.getEnd(), price.getEnd())));
+
+        filteredPrices.stream()
+                .filter(price -> price.duration().overlapsAtEndBy(newPrice.duration()))
+                .findFirst()
+                .ifPresent(price -> save(price.withUpdatedDuration(price.getBegin(), newPrice.getBegin())));
+    }
+
+    private void removeContainedPrices(Price newPrice, List<Price> filteredPrices) {
+        filteredPrices.stream()
+                .filter(price -> price.duration().containsIn(newPrice.duration()))
+                .forEach(priceRepository::delete);
+    }
+
+    private void splitPriceWhichContainsNewPrice(Price newPrice, List<Price> filteredPrices) {
+        filteredPrices.stream()
                 .filter(price -> price.duration().contains(newPrice.duration()))
-                .findFirst().orElse(null);
-        if (toSplit == null) {
-            Price overlapsAtStart = filteredPrices.stream()
-                    .filter(price -> price.duration().overlapsAtStartBy(newPrice.duration()))
-                    .findFirst().orElse(null);
-            Price overlapsAtEnd = filteredPrices.stream()
-                    .filter(price -> price.duration().overlapsAtEndBy(newPrice.duration()))
-                    .findFirst().orElse(null);
-            List<Price> pricesToReplace = filteredPrices.stream()
-                    .filter(price -> price.duration().containsIn(newPrice.duration()))
-                    .collect(Collectors.toList());
-            cleanDurationBetween(overlapsAtStart, overlapsAtEnd, newPrice);
-            replace(pricesToReplace);
-        } else {
-            splitAndSave(toSplit, newPrice);
-        }
-    }
-
-    private void replace(List<Price> prices) {
-        prices.forEach(priceRepository::delete);
-    }
-
-    private void cleanDurationBetween(Price overlapsAtStart, Price overlapsAtEnd, Price newPrice) {
-        Optional.ofNullable(overlapsAtStart)
-                .map(price -> price.withUpdatedDuration(newPrice.getEnd(), price.getEnd()))
-                .ifPresent(this::save);
-        Optional.ofNullable(overlapsAtEnd)
-                .map(price -> price.withUpdatedDuration(price.getBegin(), newPrice.getBegin()))
-                .ifPresent(this::save);
-        save(newPrice);
-    }
-
-    private void splitAndSave(Price toSplit, Price newPrice) {
-        toSplit.splitBy(newPrice)
-                .forEach(this::save);
-        save(newPrice);
+                .findFirst()
+                .ifPresent(price -> price.splitBy(newPrice).forEach(this::save));
     }
 
     @Override
@@ -84,11 +72,9 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public Price save(Price newPrice) {
         return priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber()).stream()
-                .filter(price -> price.haveSameValueWith(newPrice))
-                .filter(price -> price.getEnd().isEqual(newPrice.getBegin()))
+                .filter(price -> price.haveSameAmountWith(newPrice) && price.getEnd().isEqual(newPrice.getBegin()))
                 .findFirst()
-                .map(price -> price.withUpdatedDuration(price.getBegin(), newPrice.getEnd()))
-                .map(priceRepository::save)
+                .map(price -> priceRepository.save(price.withUpdatedDuration(price.getBegin(), newPrice.getEnd())))
                 .orElseGet(() -> priceRepository.save(newPrice));
     }
 }
