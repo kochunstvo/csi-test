@@ -25,11 +25,7 @@ public class PositiveAmount {
         return value;
     }
 
-    public void setValue(BigDecimal value) {
-        this.value = value;
-    }
-
-    public boolean equalto(PositiveAmount amount) {
+    public boolean equalTo(PositiveAmount amount) {
         return this.value.compareTo(amount.value) == 0;
     }
 }

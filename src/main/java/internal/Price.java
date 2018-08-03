@@ -1,6 +1,5 @@
 package internal;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -83,6 +82,6 @@ public class Price {
     }
 
     public boolean haveSameValueWith(Price price) {
-        return this.amount.equalto(price.amount);
+        return this.amount.equalTo(price.amount);
     }
 }
