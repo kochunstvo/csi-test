@@ -18,31 +18,31 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public void add(Price price) {
-        List<Price> filteredPrices = priceRepository.findByCodeAndNumber(price.getProductCode(), price.getNumber());
+    public void add(Price newPrice) {
+        List<Price> filteredPrices = priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber());
 
         if (filteredPrices.isEmpty()) {
-            save(price);
+            save(newPrice);
             return;
         }
 
         Price toSplit = filteredPrices.stream()
-                .filter(it -> it.duration().contains(price.duration()))
+                .filter(price -> price.duration().contains(newPrice.duration()))
                 .findFirst().orElse(null);
         if (toSplit == null) {
             Price overlapsAtStart = filteredPrices.stream()
-                    .filter(it -> it.duration().overlapsAtStartBy(price.duration()))
+                    .filter(price -> price.duration().overlapsAtStartBy(newPrice.duration()))
                     .findFirst().orElse(null);
             Price overlapsAtEnd = filteredPrices.stream()
-                    .filter(it -> it.duration().overlapsAtEndBy(price.duration()))
+                    .filter(price -> price.duration().overlapsAtEndBy(newPrice.duration()))
                     .findFirst().orElse(null);
             List<Price> pricesToReplace = filteredPrices.stream()
-                    .filter(it -> it.duration().containsIn(price.duration()))
+                    .filter(price -> price.duration().containsIn(newPrice.duration()))
                     .collect(Collectors.toList());
-            cleanDurationBetween(overlapsAtStart, overlapsAtEnd, price);
+            cleanDurationBetween(overlapsAtStart, overlapsAtEnd, newPrice);
             replace(pricesToReplace);
         } else {
-            splitAndSave(toSplit, price);
+            splitAndSave(toSplit, newPrice);
         }
     }
 
@@ -82,13 +82,13 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public Price save(Price price) {
-        return priceRepository.findByCodeAndNumber(price.getProductCode(), price.getNumber()).stream()
-                .filter(it -> it.haveSameValueWith(price))
-                .filter(it -> it.getEnd().isEqual(price.getBegin()))
+    public Price save(Price newPrice) {
+        return priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber()).stream()
+                .filter(price -> price.haveSameValueWith(newPrice))
+                .filter(price -> price.getEnd().isEqual(newPrice.getBegin()))
                 .findFirst()
-                .map(it -> it.withUpdatedDuration(it.getBegin(), price.getEnd()))
+                .map(price -> price.withUpdatedDuration(price.getBegin(), newPrice.getEnd()))
                 .map(priceRepository::save)
-                .orElseGet(() -> priceRepository.save(price));
+                .orElseGet(() -> priceRepository.save(newPrice));
     }
 }
