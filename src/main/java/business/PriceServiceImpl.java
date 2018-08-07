@@ -17,8 +17,8 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public void add(Price newPrice) {
-        List<Price> filteredPrices = priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber());
         save(newPrice);
+        List<Price> filteredPrices = priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber());
 
         if (filteredPrices.isEmpty()) {
             return;
@@ -72,9 +72,9 @@ public class PriceServiceImpl implements PriceService {
     @Override
     public Price save(Price newPrice) {
         return priceRepository.findByCodeAndNumber(newPrice.getProductCode(), newPrice.getNumber()).stream()
-                .filter(price -> price.haveSameAmountWith(newPrice) && price.getEnd().isEqual(newPrice.getBegin()))
+                .filter(price -> price.haveSameAmountWith(newPrice) && price.duration().overlaps(newPrice.duration()))
                 .findFirst()
-                .map(price -> priceRepository.save(price.withUpdatedDuration(price.getBegin(), newPrice.getEnd())))
+                .map(price -> priceRepository.save(price.mergedWith(newPrice)))
                 .orElseGet(() -> priceRepository.save(newPrice));
     }
 }

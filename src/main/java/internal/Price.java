@@ -54,6 +54,14 @@ public class Price {
         return new Price(this, newBegin, newEnd);
     }
 
+    public Price mergedWith(Price price) {
+        if (this.duration().overlapsAtStartBy(price.duration())){
+            return new Price(this, price.begin, this.end);
+        } else {
+            return new Price(this, this.begin, price.end);
+        }
+    }
+
     public Long getId() {
         return id;
     }

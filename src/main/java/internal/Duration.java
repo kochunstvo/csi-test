@@ -17,11 +17,15 @@ public class Duration {
     }
 
     public boolean overlapsAtStartBy(Duration duration) {
-        return this.from.isBefore(duration.to) && duration.from.isBefore(this.from);
+        return (this.from.isBefore(duration.to) || this.from.isEqual(duration.to)) && duration.from.isBefore(this.from);
     }
 
     public boolean overlapsAtEndBy(Duration duration) {
-        return this.to.isAfter(duration.from) && duration.to.isAfter(this.to);
+        return (this.to.isAfter(duration.from) || this.to.isEqual(duration.from)) && duration.to.isAfter(this.to);
+    }
+
+    public boolean overlaps(Duration duration) {
+        return this.overlapsAtStartBy(duration) || this.overlapsAtEndBy(duration);
     }
 
     public boolean containsIn(Duration duration) {
