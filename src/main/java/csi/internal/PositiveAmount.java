@@ -1,4 +1,4 @@
-package internal;
+package csi.internal;
 
 import java.math.BigDecimal;
 

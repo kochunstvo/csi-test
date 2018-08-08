@@ -1,8 +1,8 @@
-package business;
+package csi.business;
 
-import internal.Price;
-import internal.PriceRepository;
-import internal.PriceRepositoryImpl;
+import csi.internal.Price;
+import csi.internal.PriceRepository;
+import csi.internal.PriceRepositoryImpl;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;

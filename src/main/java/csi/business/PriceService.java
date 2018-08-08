@@ -1,6 +1,6 @@
-package business;
+package csi.business;
 
-import internal.Price;
+import csi.internal.Price;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;

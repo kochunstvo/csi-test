@@ -1,4 +1,4 @@
-package internal;
+package csi.internal;
 
 import java.time.LocalDateTime;
 import java.util.Collection;

@@ -1,10 +1,9 @@
-package business;
+package csi.business;
 
-import internal.PositiveAmount;
-import internal.Price;
-import internal.PriceRepository;
-import internal.PriceRepositoryImpl;
-
+import csi.internal.PositiveAmount;
+import csi.internal.Price;
+import csi.internal.PriceRepository;
+import csi.internal.PriceRepositoryImpl;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Collection;
