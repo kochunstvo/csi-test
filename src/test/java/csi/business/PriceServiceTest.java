@@ -86,7 +86,7 @@ public class PriceServiceTest {
     public void willAddPriceToEmptyDb() {
         service.add(price);
 
-        assertNotNull("Цена не была добавлена в БД", service.find(price.getId()));
+        assertNotNull("Price is not in DB", service.find(price.getId()));
     }
 
     /*
@@ -113,7 +113,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 1, prices.size());
+        assertEquals("Prices count does not match", 1, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, secondEnd).isEmpty());
     }
 
@@ -138,7 +138,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 1, prices.size());
+        assertEquals("Prices count does not match", 1, prices.size());
         assertFalse(service.findByBeginAndEnd(price.getBegin(), price.getEnd().plusWeeks(1)).isEmpty());
     }
 
@@ -166,7 +166,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 2, prices.size());
+        assertEquals("Prices count does not match", 2, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, firstEnd).isEmpty());
         assertFalse(service.findByBeginAndEnd(firstEnd, secondEnd).isEmpty());
     }
@@ -196,7 +196,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 2, prices.size());
+        assertEquals("Prices count does not match", 2, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, firstEnd).isEmpty());
         assertFalse(service.findByBeginAndEnd(secondStart, secondEnd).isEmpty());
     }
@@ -227,7 +227,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 3, prices.size());
+        assertEquals("Prices count does not match", 3, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, firstEnd).isEmpty());
         assertFalse(service.findByBeginAndEnd(firstEnd, thirdStart).isEmpty());
         assertFalse(service.findByBeginAndEnd(thirdStart, thirdEnd).isEmpty());
@@ -259,7 +259,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 3, prices.size());
+        assertEquals("Prices count does not match", 3, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, firstEnd).isEmpty());
         assertFalse(service.findByBeginAndEnd(firstEnd, thirdStart).isEmpty());
         assertFalse(service.findByBeginAndEnd(thirdStart, thirdEnd).isEmpty());
@@ -302,7 +302,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 3, prices.size());
+        assertEquals("Prices count does not match", 3, prices.size());
         assertFalse(service.findByBeginAndEnd(firstStart, newFirstEnd).isEmpty());
         assertFalse(service.findByBeginAndEnd(newFirstEnd, newThirdStart).isEmpty());
         assertFalse(service.findByBeginAndEnd(newThirdStart, thirdEnd).isEmpty());
@@ -373,7 +373,7 @@ public class PriceServiceTest {
 
         Collection<Price> prices = service.findAll();
 
-        assertEquals("Количество цен не сходится", 1, prices.size());
+        assertEquals("Prices count does not match", 1, prices.size());
         assertFalse(service.findByBeginAndEnd(first.getBegin(), fifth.getEnd()).isEmpty());
     }
 }
